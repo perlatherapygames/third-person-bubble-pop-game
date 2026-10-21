@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Third Person Bubble Pop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #eaf7ff;
+        --bg-dot: #cdeaff;
+        --card: #ffffff;
+        --ink: #2d3142;
+        --ink-soft: #5a5f7a;
+        --coral: #ff6b6b;
+        --coral-dark: #e14b4b;
+        --teal: #0fb5a3;
+        --teal-dark: #089e8c;
+        --sun: #ffc93c;
+        --sun-dark: #e0a800;
+        --sky: #4dabf7;
+        --pink: #f783ac;
+        --good: #2fbf71;
+        --good-dark: #1e9e57;
+        --bar-track: #cdeaff;
+        --shadow: 0 6px 0 rgba(45, 49, 66, 0.12);
+        --panel-good: #e6fbef;
+        --panel-soft: #fff3d6;
+        --level-easy: #d3f9f3;
+        --level-medium: #fff0bf;
+        --level-hard: #ffe3ec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1d2638;
+          --bg-dot: #26314a;
+          --card: #313850;
+          --ink: #f4f6ff;
+          --ink-soft: #c3c9e0;
+          --coral: #ff8585;
+          --coral-dark: #ff6b6b;
+          --teal: #2dd4bf;
+          --teal-dark: #14b8a6;
+          --sun: #ffd34d;
+          --sun-dark: #ffc93c;
+          --sky: #74c0fc;
+          --pink: #faa2c1;
+          --good: #51cf8a;
+          --good-dark: #2fbf71;
+          --bar-track: #454d68;
+          --shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+          --panel-good: #1f4634;
+          --panel-soft: #4d4023;
+          --level-easy: #274b47;
+          --level-medium: #4d4426;
+          --level-hard: #4a3542;
+        }
+      }
+
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Fredoka", "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 12% 18%, var(--bg-dot) 0 26px, transparent 27px),
+          radial-gradient(circle at 88% 78%, var(--bg-dot) 0 34px, transparent 35px),
+          radial-gradient(circle at 78% 12%, var(--bg-dot) 0 18px, transparent 19px),
+          var(--bg);
+        color: var(--ink);
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+
+      .wrap { max-width: 620px; margin: 0 auto; padding: 18px 16px 40px; }
+
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+      .pill {
+        background: var(--card); border-radius: 999px; padding: 10px 18px;
+        font-size: 1.15rem; font-weight: 600; box-shadow: var(--shadow);
+        display: inline-flex; align-items: center; gap: 8px; min-height: 48px;
+      }
+      .pill .star-ico { font-size: 1.3rem; line-height: 1; }
+      #scorePill.pop { animation: pop 0.35s ease; }
+      @keyframes pop {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.18) rotate(-2deg); }
+        100% { transform: scale(1); }
+      }
+
+      .progress-shell {
+        margin-top: 14px; background: var(--bar-track); border-radius: 999px;
+        height: 26px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+      }
+      .progress-fill {
+        height: 100%; width: 0%; border-radius: 999px;
+        background: repeating-linear-gradient(-45deg, var(--teal) 0 16px, var(--teal-dark) 16px 32px);
+        transition: width 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+      .progress-label { margin-top: 8px; text-align: center; font-weight: 600; font-size: 1.05rem; color: var(--ink-soft); }
+
+      .card {
+        margin-top: 18px; background: var(--card); border-radius: 28px;
+        box-shadow: var(--shadow); padding: 24px 18px; text-align: center;
+      }
+      .level-badge {
+        display: inline-block; border-radius: 999px; padding: 8px 20px;
+        font-size: 1.1rem; font-weight: 700; letter-spacing: 0.14em; margin-bottom: 10px;
+        box-shadow: 0 3px 0 rgba(45, 49, 66, 0.15);
+      }
+      .level-badge.easy { background: var(--level-easy); }
+      .level-badge.medium { background: var(--level-medium); }
+      .level-badge.hard { background: var(--level-hard); }
+      .big-emoji { font-size: clamp(3.4rem, 15vw, 4.6rem); line-height: 1.1; display: block; animation: bob 2.4s ease-in-out infinite; }
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+      .target-word {
+        margin: 6px 0 2px; font-size: clamp(2.4rem, 10vw, 3.4rem); font-weight: 700;
+        letter-spacing: 0.04em; color: var(--coral-dark); text-transform: uppercase;
+      }
+      .target-sub {
+        margin: 0; font-size: clamp(1.3rem, 5.5vw, 1.7rem); font-weight: 600; color: var(--ink-soft);
+      }
+      .prompt { margin: 8px 0 0; font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: 500; color: var(--ink-soft); }
+      .prompt strong { color: var(--ink); }
+
+      /* ---------- Bubbles ---------- */
+      .bubbles {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+      }
+      .bubble {
+        font-family: inherit;
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        max-width: 220px;
+        justify-self: center;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        touch-action: manipulation;
+        padding: 0;
+        animation: floaty 3.4s ease-in-out infinite;
+      }
+      .bubble:nth-child(2n) { animation-delay: -1.2s; }
+      .bubble:nth-child(3n) { animation-delay: -2.1s; }
+      @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+      .bubble-body {
+        position: absolute; inset: 0;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: inset -12px -14px 0 rgba(0,0,0,0.10), inset 10px 12px 0 rgba(255,255,255,0.35);
+        transition: transform 0.12s ease, opacity 0.25s ease;
+      }
+      .bubble:active:not(:disabled) .bubble-body { transform: scale(0.93); }
+      .bubble-body::before {
+        content: ""; position: absolute; top: 10%; left: 18%;
+        width: 20%; height: 28%; border-radius: 50%;
+        background: rgba(255,255,255,0.6); transform: rotate(-18deg);
+      }
+      .bubble-word {
+        position: relative; z-index: 2;
+        color: #fff; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+        font-size: clamp(1.3rem, 6vw, 1.8rem);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        padding: 0 12px; line-height: 1.15;
+        overflow-wrap: break-word;
+      }
+      .bubble:disabled { cursor: default; animation: none; }
+      .bubble.is-dim .bubble-body { opacity: 0.35; }
+      .bubble.is-wrongpick .bubble-body { animation: gentle-shake 0.45s ease; }
+      .bubble.is-popped .bubble-body { animation: burst 0.32s ease forwards; }
+      @keyframes gentle-shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-8px) rotate(-4deg); }
+        75% { transform: translateX(8px) rotate(4deg); }
+      }
+      @keyframes burst {
+        0% { transform: scale(1); opacity: 1; }
+        45% { transform: scale(1.35); opacity: 1; }
+        100% { transform: scale(0.1); opacity: 0; }
+      }
+
+      .pop-particle { position: fixed; z-index: 60; pointer-events: none; border-radius: 50%; }
+
+      /* ---------- Feedback + say-it ---------- */
+      .feedback {
+        margin-top: 20px; border-radius: 22px; padding: 18px 16px;
+        font-size: clamp(1.15rem, 5vw, 1.4rem); font-weight: 600; line-height: 1.4; display: none;
+      }
+      .feedback.show { display: block; animation: rise 0.3s ease; }
+      .feedback.good { background: var(--panel-good); }
+      .feedback.soft { background: var(--panel-soft); }
+      .feedback .points {
+        display: inline-block; margin-top: 8px; background: var(--sun); color: #4d3b00;
+        border-radius: 999px; padding: 4px 16px; font-weight: 700;
+      }
+      @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+      .sayit-zone { margin-top: 18px; display: none; }
+      .sayit-zone.show { display: block; animation: rise 0.3s ease; }
+      .big-btn {
+        font-family: inherit; width: 100%; border: none; border-radius: 22px;
+        padding: 20px 16px; min-height: 84px; font-size: clamp(1.5rem, 6.5vw, 2rem);
+        font-weight: 700; cursor: pointer; touch-action: manipulation;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+      .big-btn:active { transform: translateY(3px); }
+      .btn-say { background: var(--sky); color: #fff; box-shadow: 0 6px 0 #2f7fc4; }
+      @media (prefers-color-scheme: dark) { .btn-say { color: #0d2b45; } }
+      .btn-say:active { box-shadow: 0 2px 0 #2f7fc4; }
+      .btn-said { background: var(--sun); color: #4d3b00; box-shadow: 0 6px 0 var(--sun-dark); display: none; }
+      .btn-said.show { display: block; }
+      .btn-said:active { box-shadow: 0 2px 0 var(--sun-dark); }
+      .sayit-hint { margin: 10px 0 0; font-size: 1.05rem; font-weight: 500; color: var(--ink-soft); }
+
+      /* ---------- Win screen ---------- */
+      .win { display: none; text-align: center; }
+      .win.show { display: block; }
+      .win .trophy { font-size: clamp(4.5rem, 22vw, 6.5rem); display: block; animation: bob 2s ease-in-out infinite; }
+      .win h2 { margin: 8px 0 4px; font-size: clamp(2rem, 9vw, 3rem); font-weight: 700; color: var(--coral-dark); }
+      .win p { font-size: 1.25rem; font-weight: 500; color: var(--ink-soft); margin: 6px 0; }
+      .win .final-score { font-size: clamp(1.8rem, 8vw, 2.4rem); font-weight: 700; color: var(--ink); margin: 14px 0 4px; }
+      .stars { font-size: clamp(3rem, 14vw, 4.2rem); letter-spacing: 0.12em; margin: 10px 0 6px; }
+      .stars .earned { color: var(--sun-dark); display: inline-block; animation: star-in 0.5s ease backwards; }
+      .stars .earned:nth-child(2) { animation-delay: 0.18s; }
+      .stars .earned:nth-child(3) { animation-delay: 0.36s; }
+      .stars .dim { color: var(--bar-track); }
+      @keyframes star-in { from { transform: scale(0) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+      .btn-again { margin-top: 20px; background: var(--coral); color: #fff; box-shadow: 0 6px 0 var(--coral-dark); }
+      @media (prefers-color-scheme: dark) { .btn-again { color: #451010; } }
+      .btn-again:active { box-shadow: 0 2px 0 var(--coral-dark); }
+
+      .friends-recap { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+      .friends-recap span { background: var(--panel-good); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 1rem; }
+
+      #confetti-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+      .confetti-piece { position: absolute; top: -4vh; will-change: transform, opacity; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .big-emoji, .win .trophy, .bubble { animation: none; }
+        .bubble.is-wrongpick, .bubble.is-popped, .feedback.show, .sayit-zone.show, #scorePill.pop, .stars .earned { animation: none; }
+        .progress-fill { transition: none; }
+      }
+    </style>
+    <link rel="apple-touch-icon" href="/third-person-bubble-pop-game/apple-touch-icon.png">
+  </head>
+  <body>
+    <div id="confetti-layer" aria-hidden="true"></div>
+
+    <div class="wrap">
+      <div class="topbar">
+        <span class="pill" id="roundPill">🫧 Round <span id="roundNow">1</span> of 12</span>
+        <span class="pill" id="scorePill"><span class="star-ico" aria-hidden="true">⭐</span> <span id="scoreNow">0</span> points</span>
+      </div>
+      <div class="progress-shell" role="progressbar" aria-label="Game progress" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p class="progress-label" id="progressLabel">Pop all 12 -s bubbles! 🫧</p>
+
+      <main class="card" id="gameCard">
+        <span class="level-badge easy" id="levelBadge">⭐ EASY</span>
+        <span class="big-emoji" id="bigEmoji" aria-hidden="true">👦🏾</span>
+        <h1 class="target-word" id="targetWord">HE</h1>
+        <p class="target-sub" id="targetSub">run</p>
+        <p class="prompt" id="promptText">Pop the bubble that goes with <strong>HE</strong>!</p>
+
+        <div class="bubbles" id="bubbles" role="group" aria-label="Word choices"></div>
+
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+
+        <div class="sayit-zone" id="sayitZone">
+          <button class="big-btn btn-say" id="sayBtn" type="button">🔊 Say it!</button>
+          <p class="sayit-hint" id="sayitHint">Tap to hear it, then say it out loud!</p>
+          <button class="big-btn btn-said" id="saidBtn" type="button">🗣️ I said it! +100</button>
+        </div>
+      </main>
+
+      <section class="card win" id="winCard" aria-live="polite">
+        <span class="trophy" aria-hidden="true">🏆</span>
+        <h2>You popped them all!</h2>
+        <p>He, she, it — you add -s like a pro! 🎉</p>
+        <div class="stars" id="starsRow" aria-label="Stars earned"></div>
+        <p class="final-score">⭐ <span id="finalScore">0</span> points</p>
+        <p id="winMessage">Bubble pop champion!</p>
+        <div class="friends-recap" id="friendsRecap"></div>
+        <button class="big-btn btn-again" id="againBtn" type="button">🔁 Play Again</button>
+      </section>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // Third person singular (-s) verbs. Progressive difficulty:
+        // 4 EASY (just add -s), 4 MEDIUM (-es / -ies), 4 HARD (irregular).
+        // Each round: subject + base verb, 4 bubbles (1 correct + 3
+        // hand-checked distractor forms).
+        var PAIRS = [
+          // EASY — just add -s
+          { level: "easy", subject: "HE",  emoji: "👦🏾", base: "run",  answer: "runs",  others: ["run", "running", "runned"] },
+          { level: "easy", subject: "SHE", emoji: "👧🏾", base: "eat",  answer: "eats",  others: ["eat", "eating", "eated"] },
+          { level: "easy", subject: "IT",  emoji: "🐶", base: "bark", answer: "barks", others: ["bark", "barking", "barked"] },
+          { level: "easy", subject: "HE",  emoji: "👦🏾", base: "jump", answer: "jumps", others: ["jump", "jumping", "jumpes"] },
+          // MEDIUM — -es and -ies
+          { level: "medium", subject: "SHE", emoji: "👧🏾", base: "watch",  answer: "watches",  others: ["watch", "watchs", "watching"] },
+          { level: "medium", subject: "HE",  emoji: "👦🏾", base: "go",     answer: "goes",     others: ["go", "gos", "going"] },
+          { level: "medium", subject: "IT",  emoji: "🐶", base: "fly",    answer: "flies",    others: ["fly", "flys", "flying"] },
+          { level: "medium", subject: "SHE", emoji: "👧🏾", base: "carry",  answer: "carries",  others: ["carry", "carrys", "carrying"] },
+          // HARD — irregular
+          { level: "hard", subject: "HE",  emoji: "👦🏾", base: "have", answer: "has",    others: ["have", "haves", "having"] },
+          { level: "hard", subject: "SHE", emoji: "👧🏾", base: "do",   answer: "does",   others: ["do", "dos", "doing"] },
+          { level: "hard", subject: "IT",  emoji: "🐶", base: "buzz", answer: "buzzes", others: ["buzz", "buzzs", "buzzing"] },
+          { level: "hard", subject: "HE",  emoji: "👦🏾", base: "try",  answer: "tries",  others: ["try", "trys", "trying"] }
+        ];
+        var LEVEL_LABELS = { easy: "⭐ EASY", medium: "💪 MEDIUM", hard: "🔥 HARD" };
+        var TOTAL = PAIRS.length;
+        var BUBBLE_COLORS = [
+          ["#4dabf7", "#2f7fc4"],
+          ["#f783ac", "#e0568c"],
+          ["#0fb5a3", "#089e8c"],
+          ["#ffa94d", "#e8890c"]
+        ];
+
+        var rounds = [];
+        var roundIndex = 0;
+        var score = 0;
+        var firstTryWins = 0;
+        var locked = false;
+
+        var el = {
+          roundNow: document.getElementById("roundNow"),
+          scoreNow: document.getElementById("scoreNow"),
+          scorePill: document.getElementById("scorePill"),
+          progressFill: document.getElementById("progressFill"),
+          progressBar: document.getElementById("progressBar"),
+          progressLabel: document.getElementById("progressLabel"),
+          gameCard: document.getElementById("gameCard"),
+          winCard: document.getElementById("winCard"),
+          levelBadge: document.getElementById("levelBadge"),
+          bigEmoji: document.getElementById("bigEmoji"),
+          targetWord: document.getElementById("targetWord"),
+          targetSub: document.getElementById("targetSub"),
+          promptText: document.getElementById("promptText"),
+          bubbles: document.getElementById("bubbles"),
+          feedback: document.getElementById("feedback"),
+          sayitZone: document.getElementById("sayitZone"),
+          sayBtn: document.getElementById("sayBtn"),
+          saidBtn: document.getElementById("saidBtn"),
+          sayitHint: document.getElementById("sayitHint"),
+          finalScore: document.getElementById("finalScore"),
+          starsRow: document.getElementById("starsRow"),
+          winMessage: document.getElementById("winMessage"),
+          friendsRecap: document.getElementById("friendsRecap"),
+          againBtn: document.getElementById("againBtn"),
+          confettiLayer: document.getElementById("confetti-layer")
+        };
+
+        function shuffle(arr) {
+          var a = arr.slice();
+          for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = a[i]; a[i] = a[j]; a[j] = t;
+          }
+          return a;
+        }
+
+        function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        function setScore(points) {
+          score += points;
+          el.scoreNow.textContent = score;
+          el.scorePill.classList.remove("pop");
+          void el.scorePill.offsetWidth;
+          el.scorePill.classList.add("pop");
+        }
+
+        function setProgress(done) {
+          var pct = Math.round((done / TOTAL) * 100);
+          el.progressFill.style.width = pct + "%";
+          el.progressBar.setAttribute("aria-valuenow", done);
+          if (done >= TOTAL) el.progressLabel.textContent = "All 12 -s bubbles popped! 🎉";
+          else if (done === 0) el.progressLabel.textContent = "Pop all 12 -s bubbles! 🫧";
+          else el.progressLabel.textContent = done + " of 12 -s bubbles popped! 🫧";
+        }
+
+        /* ---------- Confetti (hand-rolled, no library) ---------- */
+        var CONFETTI_COLORS = ["#ff6b6b", "#ffc93c", "#0fb5a3", "#4dabf7", "#f783ac", "#2fbf71"];
+        function confettiBurst(count) {
+          if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          for (var i = 0; i < count; i++) {
+            var piece = document.createElement("div");
+            piece.className = "confetti-piece";
+            var size = 8 + Math.random() * 10;
+            piece.style.width = size + "px";
+            piece.style.height = (Math.random() > 0.5 ? size : size * 0.45) + "px";
+            piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+            piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "3px";
+            piece.style.left = (Math.random() * 100) + "vw";
+            el.confettiLayer.appendChild(piece);
+            var drift = (Math.random() - 0.5) * 220;
+            var spin = (Math.random() - 0.5) * 720;
+            var fall = window.innerHeight * (0.75 + Math.random() * 0.35);
+            var anim = piece.animate(
+              [
+                { transform: "translate(0, -5vh) rotate(0deg)", opacity: 1 },
+                { transform: "translate(" + drift + "px, " + fall + "px) rotate(" + spin + "deg)", opacity: 0.9 }
+              ],
+              { duration: 1400 + Math.random() * 1200, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)", delay: Math.random() * 200 }
+            );
+            (function (p, a) {
+              var done = function () { if (p.parentNode) p.parentNode.removeChild(p); };
+              if (a && a.finished && a.finished.then) { a.finished.then(done).catch(done); }
+              else { setTimeout(done, 3000); }
+            })(piece, anim);
+          }
+        }
+
+        /* ---------- Bubble pop particles ---------- */
+        function popParticles(x, y, colors) {
+          if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          for (var i = 0; i < 10; i++) {
+            var p = document.createElement("div");
+            p.className = "pop-particle";
+            var size = 7 + Math.random() * 8;
+            p.style.width = size + "px";
+            p.style.height = size + "px";
+            p.style.background = colors[i % colors.length];
+            p.style.left = x + "px";
+            p.style.top = y + "px";
+            document.body.appendChild(p);
+            var ang = (Math.PI * 2 * i) / 10 + Math.random() * 0.5;
+            var dist = 46 + Math.random() * 44;
+            var anim = p.animate(
+              [
+                { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
+                { transform: "translate(" + (Math.cos(ang) * dist - size / 2) + "px," + (Math.sin(ang) * dist - size / 2) + "px) scale(0.2)", opacity: 0 }
+              ],
+              { duration: 480 + Math.random() * 220, easing: "ease-out" }
+            );
+            (function (el2, a) {
+              var done = function () { if (el2.parentNode) el2.parentNode.removeChild(el2); };
+              if (a && a.finished && a.finished.then) { a.finished.then(done).catch(done); }
+              else { setTimeout(done, 900); }
+            })(p, anim);
+          }
+        }
+
+        /* ---------- Speech ---------- */
+        function speak(text) {
+          try {
+            if (!("speechSynthesis" in window)) return;
+            window.speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text);
+            u.rate = 0.92;
+            u.pitch = 1.1;
+            window.speechSynthesis.speak(u);
+          } catch (e) { /* speech is a bonus — game continues without it */ }
+        }
+
+        /* ---------- Round flow ---------- */
+        function startGame() {
+          rounds = PAIRS.slice(); // fixed progressive order: easy → medium → hard
+          roundIndex = 0;
+          score = 0;
+          firstTryWins = 0;
+          el.scoreNow.textContent = "0";
+          setProgress(0);
+          el.winCard.classList.remove("show");
+          el.gameCard.style.display = "";
+          renderRound();
+        }
+
+        function current() { return rounds[roundIndex]; }
+
+        function renderRound() {
+          locked = false;
+          var r = current();
+          el.roundNow.textContent = (roundIndex + 1);
+          el.levelBadge.className = "level-badge " + r.level;
+          el.levelBadge.textContent = LEVEL_LABELS[r.level];
+          el.bigEmoji.textContent = r.emoji;
+          el.targetWord.textContent = r.subject;
+          el.targetSub.textContent = "(" + r.base + ")";
+          el.promptText.innerHTML = "";
+          el.promptText.appendChild(document.createTextNode("Pop the bubble that goes with "));
+          var strong = document.createElement("strong");
+          strong.textContent = r.subject;
+          el.promptText.appendChild(strong);
+          el.promptText.appendChild(document.createTextNode("!"));
+
+          el.feedback.className = "feedback";
+          el.feedback.textContent = "";
+          el.sayitZone.classList.remove("show");
+          el.sayBtn.style.display = "";
+          el.saidBtn.classList.remove("show");
+
+          el.bubbles.innerHTML = "";
+          var colors = shuffle(BUBBLE_COLORS);
+          var options = shuffle([r.answer].concat(r.others));
+          options.forEach(function (opt, i) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "bubble";
+            b.setAttribute("aria-label", "Bubble: " + opt);
+            var c = colors[i % colors.length];
+            b.innerHTML =
+              '<span class="bubble-body" style="background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9), ' + c[0] + ' 45%, ' + c[1] + ');">' +
+                '<span class="bubble-word">' + escapeHtml(opt) + "</span>" +
+              "</span>";
+            b.addEventListener("click", function () { pick(b, opt); });
+            el.bubbles.appendChild(b);
+          });
+          setProgress(roundIndex);
+        }
+
+        function escapeHtml(s) {
+          return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function ruleText() {
+          return "For HE, SHE, and IT — add -S!";
+        }
+
+        function pick(btn, opt) {
+          if (locked || btn.disabled) return;
+          var r = current();
+          var buttons = el.bubbles.querySelectorAll(".bubble");
+
+          if (opt === r.answer) {
+            locked = true;
+            firstTryWins++;
+            var rect = btn.getBoundingClientRect();
+            var cx = rect.left + rect.width / 2;
+            var cy = rect.top + rect.height / 2;
+            popParticles(cx, cy, ["#4dabf7", "#ffc93c", "#ffffff"]);
+            btn.classList.add("is-popped");
+            setTimeout(function () { btn.style.visibility = "hidden"; }, 300);
+            setScore(100);
+            buttons.forEach(function (b) { if (b !== btn) { b.disabled = true; b.classList.add("is-dim"); } });
+            el.feedback.className = "feedback show good";
+            el.feedback.innerHTML = "";
+            el.feedback.appendChild(document.createTextNode("🎉 POP! \"" + r.subject.charAt(0) + r.subject.slice(1).toLowerCase() + " " + r.answer.toUpperCase() + "!\" — " + ruleText()));
+            var pts = document.createElement("span");
+            pts.className = "points";
+            pts.textContent = "+100 points!";
+            el.feedback.appendChild(document.createElement("br"));
+            el.feedback.appendChild(pts);
+            confettiBurst(45);
+            speak("Pop! Yes! " + cap(r.subject.toLowerCase()) + " " + r.answer + "!");
+            showSayIt(r);
+          } else {
+            btn.classList.add("is-wrongpick");
+            btn.classList.add("is-dim");
+            btn.disabled = true;
+            el.feedback.className = "feedback show soft";
+            el.feedback.textContent = "💛 Oops! Not quite. Remember the rule: " + ruleText() + " Try again!";
+            speak("Oops! Remember: for he, she, and it, add s! Try again!");
+            setTimeout(function () { btn.classList.remove("is-wrongpick"); }, 500);
+          }
+        }
+
+        function showSayIt(r) {
+          el.sayitZone.classList.add("show");
+          el.sayBtn.style.display = "";
+          el.saidBtn.classList.remove("show");
+          var spoken = cap(r.subject.toLowerCase()) + " " + r.answer;
+          el.sayitHint.textContent = "Tap to hear \"" + spoken + "\", then say it out loud!";
+          el.sayBtn.setAttribute("data-spoken", spoken);
+        }
+
+        el.sayBtn.addEventListener("click", function () {
+          var spoken = el.sayBtn.getAttribute("data-spoken");
+          speak(spoken + "! " + spoken + "!");
+          el.sayBtn.style.display = "none";
+          el.sayitHint.textContent = "Your turn — say it out loud! 🌟";
+          el.saidBtn.classList.add("show");
+          el.saidBtn.focus();
+        });
+
+        el.saidBtn.addEventListener("click", function () {
+          setScore(100);
+          confettiBurst(18);
+          roundIndex++;
+          if (roundIndex >= TOTAL) {
+            setProgress(TOTAL);
+            showWin();
+          } else {
+            setProgress(roundIndex);
+            renderRound();
+          }
+        });
+
+        function showWin() {
+          el.gameCard.style.display = "none";
+          el.roundNow.textContent = TOTAL;
+          el.finalScore.textContent = score;
+
+          var stars = 1;
+          if (firstTryWins >= 11) stars = 3;
+          else if (firstTryWins >= 7) stars = 2;
+
+          el.starsRow.innerHTML = "";
+          for (var i = 0; i < 3; i++) {
+            var s = document.createElement("span");
+            s.textContent = "★";
+            s.className = i < stars ? "earned" : "dim";
+            el.starsRow.appendChild(s);
+          }
+          el.starsRow.setAttribute("aria-label", stars + " out of 3 stars earned");
+
+          if (stars === 3) el.winMessage.textContent = "WOW! You popped almost every -s on the first try! 🌟";
+          else if (stars === 2) el.winMessage.textContent = "Great popping, -s superstar! 🌟";
+          else el.winMessage.textContent = "You popped all 12 -s bubbles — great practicing! 🌟";
+
+          el.friendsRecap.innerHTML = "";
+          rounds.forEach(function (r) {
+            var chip = document.createElement("span");
+            chip.textContent = r.emoji + " " + r.subject.toLowerCase() + " " + r.answer;
+            el.friendsRecap.appendChild(chip);
+          });
+
+          el.winCard.classList.add("show");
+          confettiBurst(90);
+          speak("You did it! He, she, it — you add s like a pro!");
+        }
+
+        el.againBtn.addEventListener("click", startGame);
+
+        startGame();
+      })();
+    </script>
+  </body>
+</html>
